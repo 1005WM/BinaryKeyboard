@@ -199,6 +199,24 @@ void KBD_Core_HandleKeyEvent(const key_event_t *evt)
         }
     }
 
+#if defined(KBD_LAYOUT_5KEY)
+    /* K5 is a local color control on every layer, including with saved keymaps.
+     * BOOT layer switching above keeps priority over the color action. */
+    if (evt->key == 4)
+    {
+        s_active_action_valid[evt->key] = 0;
+        if (pressed)
+        {
+            KBD_RGB_NextColor();
+            if (KBD_Config_Save() != 0)
+            {
+                LOG_W(TAG, "K5 RGB color save failed");
+            }
+        }
+        return;
+    }
+#endif
+
     if (pressed)
     {
         s_active_action_valid[evt->key] = 0;

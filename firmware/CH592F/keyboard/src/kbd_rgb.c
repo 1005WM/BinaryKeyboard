@@ -902,6 +902,44 @@ void KBD_RGB_SetColor(uint8_t r, uint8_t g, uint8_t b)
     cfg->color_b = b;
 }
 
+void KBD_RGB_NextColor(void)
+{
+    static const uint8_t colors[][3] = {
+        {255, 0, 0},     /* red */
+        {255, 255, 0},   /* yellow */
+        {0, 255, 0},     /* green */
+        {0, 255, 255},   /* cyan */
+        {0, 0, 255},     /* blue */
+        {255, 0, 255},   /* magenta */
+        {255, 255, 255}, /* white */
+    };
+    const uint8_t count = sizeof(colors) / sizeof(colors[0]);
+    kbd_rgb_config_t *cfg = KBD_GetRgbConfig();
+    uint8_t next = 0;
+
+    /* Derive the next color from the config so saved colors survive a reboot.
+     * A custom color outside this palette starts at red. */
+    for (uint8_t i = 0; i < count; i++)
+    {
+        if (cfg->color_r == colors[i][0] &&
+            cfg->color_g == colors[i][1] &&
+            cfg->color_b == colors[i][2])
+        {
+            next = (uint8_t)((i + 1) % count);
+            break;
+        }
+    }
+
+    cfg->enabled = 1;
+    if (cfg->brightness == 0)
+    {
+        KBD_RGB_SetBrightness(KBD_RGB_DEFAULT_BRIGHTNESS);
+    }
+    KBD_RGB_SetMode(KBD_RGB_STATIC);
+    KBD_RGB_SetColor(colors[next][0], colors[next][1], colors[next][2]);
+    ClearPressEffects();
+}
+
 void KBD_RGB_SetSpeed(uint8_t speed)
 {
     kbd_rgb_config_t *cfg = KBD_GetRgbConfig();

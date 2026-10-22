@@ -167,6 +167,12 @@ extern "C"
     void KBD_RGB_SetColor(uint8_t r, uint8_t g, uint8_t b);
 
     /**
+     * @brief 循环切换预设单色，开启按键灯并恢复非零亮度
+     * @note 仅更新 RAM；调用者负责保存配置
+     */
+    void KBD_RGB_NextColor(void);
+
+    /**
      * @brief 设置动画速度
      *
      * @param[in] speed 速度值 (0=最慢, 255=最快)
