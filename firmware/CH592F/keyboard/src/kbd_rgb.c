@@ -940,6 +940,32 @@ void KBD_RGB_NextColor(void)
     ClearPressEffects();
 }
 
+void KBD_RGB_NextLightingMode(void)
+{
+    kbd_rgb_config_t *cfg = KBD_GetRgbConfig();
+    uint8_t mode = KBD_RGB_STATIC;
+    if (cfg->mode >= KBD_RGB_STATIC && cfg->mode < KBD_RGB_RAINBOW)
+        mode = cfg->mode + 1;
+    cfg->enabled = 1;
+    if (cfg->brightness == 0)
+        KBD_RGB_SetBrightness(KBD_RGB_DEFAULT_BRIGHTNESS);
+    KBD_RGB_SetMode((kbd_rgb_mode_t)mode);
+    ClearPressEffects();
+}
+
+void KBD_RGB_NextBrightness(void)
+{
+    kbd_rgb_config_t *cfg = KBD_GetRgbConfig();
+    uint16_t brightness = ((uint16_t)cfg->brightness / 51u + 1u) * 51u;
+    if (brightness > 255u)
+        brightness = 51u;
+    cfg->enabled = 1;
+    if (cfg->mode == KBD_RGB_OFF || cfg->mode == KBD_RGB_INDICATOR)
+        KBD_RGB_SetMode(KBD_RGB_STATIC);
+    KBD_RGB_SetBrightness((uint8_t)brightness);
+    ClearPressEffects();
+}
+
 void KBD_RGB_SetSpeed(uint8_t speed)
 {
     kbd_rgb_config_t *cfg = KBD_GetRgbConfig();

@@ -201,6 +201,9 @@ void Key_Init(void);
  */
 uint8_t Key_GetEvent(key_event_t *evt);
 
+/** @brief Current millisecond clock, shared with key_event_t.tick_ms. */
+uint32_t Key_GetTickMs(void);
+
 /**
  * @brief 开始 DEEP 唤醒恢复阶段。
  * @details 唤醒键和重连期间的输入只用于恢复连接，不会作为 HID 操作执行。

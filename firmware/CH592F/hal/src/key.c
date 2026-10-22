@@ -251,6 +251,8 @@ static volatile uint32_t s_tick_ms = 0;
  */
 static inline uint32_t GetTickMs(void) { return s_tick_ms; }
 
+uint32_t Key_GetTickMs(void) { return GetTickMs(); }
+
 /* ============================================================================
  * Contexts
  * ============================================================================

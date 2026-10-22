@@ -172,6 +172,12 @@ extern "C"
      */
     void KBD_RGB_NextColor(void);
 
+    /** @brief 常亮、呼吸、闪烁、彩虹之间循环；仅更新 RAM */
+    void KBD_RGB_NextLightingMode(void);
+
+    /** @brief 循环切换 20%、40%、60%、80%、100% 亮度；仅更新 RAM */
+    void KBD_RGB_NextBrightness(void);
+
     /**
      * @brief 设置动画速度
      *
