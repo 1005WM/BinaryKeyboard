@@ -918,9 +918,9 @@ const kbd_action_t *KBD_GetKeyAction(uint8_t key_index) {
    */
   static const kbd_action_t shortcut_actions[] = {
       {KBD_ACTION_KEYBOARD, KBD_MOD_LGUI | KBD_MOD_LSHIFT, 0x16, 0},
+      {KBD_ACTION_KEYBOARD, 0, 0x28, 0},
       {KBD_ACTION_KEYBOARD, KBD_MOD_LCTRL, 0x06, 0},
       {KBD_ACTION_KEYBOARD, KBD_MOD_LCTRL, 0x19, 0},
-      {KBD_ACTION_KEYBOARD, 0, 0x28, 0},
   };
   if (key_index >= 1 && key_index <= 4) {
     return &shortcut_actions[key_index - 1];
