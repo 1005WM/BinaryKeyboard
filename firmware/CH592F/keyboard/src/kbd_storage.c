@@ -902,7 +902,7 @@ uint8_t KBD_PrevLayer(void) {
 const kbd_action_t *KBD_GetKeyAction(uint8_t key_index) {
   /* K1 launches DeepSeek Harness through the Windows desktop shortcut.
    * Keep this in the effective mapping so existing saved configs also work;
-   * no Flash reset or changes to the other keys are required. HID 0x42 = F9.
+   * no Flash reset is required. HID 0x42 = F9.
    */
   static const kbd_action_t deepseek_action = {
       KBD_ACTION_KEYBOARD, KBD_MOD_LCTRL | KBD_MOD_LALT, 0x42, 0};
@@ -912,6 +912,20 @@ const kbd_action_t *KBD_GetKeyAction(uint8_t key_index) {
   if (key_index == 0) {
     return &deepseek_action;
   }
+#if defined(KBD_LAYOUT_5KEY)
+  /* Fixed Windows shortcuts on every layer, including existing saved maps.
+   * HID usages: S=0x16, C=0x06, V=0x19, Enter=0x28.
+   */
+  static const kbd_action_t shortcut_actions[] = {
+      {KBD_ACTION_KEYBOARD, KBD_MOD_LGUI | KBD_MOD_LSHIFT, 0x16, 0},
+      {KBD_ACTION_KEYBOARD, KBD_MOD_LCTRL, 0x06, 0},
+      {KBD_ACTION_KEYBOARD, KBD_MOD_LCTRL, 0x19, 0},
+      {KBD_ACTION_KEYBOARD, 0, 0x28, 0},
+  };
+  if (key_index >= 1 && key_index <= 4) {
+    return &shortcut_actions[key_index - 1];
+  }
+#endif
   uint8_t layer = s_keymap_config.current_layer;
   if (layer >= s_keymap_config.num_layers) {
     layer = s_keymap_config.default_layer;

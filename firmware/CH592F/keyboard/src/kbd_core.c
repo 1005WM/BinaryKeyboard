@@ -12,7 +12,6 @@
 #include "kbd_rgb.h"
 #include "kbd_mode.h"
 #include "kbd_log.h"
-#include "kbd_light_key.h"
 #include "hal_utils.h"
 #include "key.h"
 #include "encoder.h"
@@ -70,9 +69,6 @@ static void ExecuteFnAction(kbd_fn_action_t action, uint8_t param);
 static void OnModeChange(kbd_work_mode_t new_mode);
 static void OnConnStateChange(kbd_conn_state_t state);
 static void OnLedReport(uint8_t leds);
-#if defined(KBD_LAYOUT_5KEY)
-static void ApplyLightKeyAction(kbd_light_key_action_t action);
-#endif
 
 /*============================================================================*/
 /* 模式管理回调结构 */
@@ -161,13 +157,6 @@ void KBD_Core_Process(void)
         KBD_Core_HandleFnEvent(&fn_evt);
     }
 
-#if defined(KBD_LAYOUT_5KEY)
-    /* Drain timestamped key events first, then resolve gesture timeouts. */
-    if (BootKey_IsPressed() == 1)
-        KBD_LightKey_Reset();
-    else
-        ApplyLightKeyAction(KBD_LightKey_Process(Key_GetTickMs()));
-#endif
 }
 
 /**
@@ -211,15 +200,6 @@ void KBD_Core_HandleKeyEvent(const key_event_t *evt)
         }
     }
 
-#if defined(KBD_LAYOUT_5KEY)
-    /* K5 gestures override saved keymaps; BOOT combinations keep priority. */
-    if (evt->key == 4)
-    {
-        s_active_action_valid[evt->key] = 0;
-        ApplyLightKeyAction(KBD_LightKey_HandleEvent(pressed, evt->tick_ms));
-        return;
-    }
-#endif
 
     if (pressed)
     {
@@ -392,9 +372,6 @@ static void OnLedReport(uint8_t leds)
 
 static void ResetInputState(void)
 {
-#if defined(KBD_LAYOUT_5KEY)
-    KBD_LightKey_Reset();
-#endif
     memset(s_pressed_keys, 0, sizeof(s_pressed_keys));
     memset(s_keycode_slots, 0, sizeof(s_keycode_slots));
     memset(s_keycode_refcount, 0, sizeof(s_keycode_refcount));
@@ -584,9 +561,6 @@ static void UpdateMouseButtons(uint8_t buttons, bool pressed)
 
 static void SwitchLayer(uint8_t target_layer)
 {
-#if defined(KBD_LAYOUT_5KEY)
-    KBD_LightKey_Reset();
-#endif
     uint8_t old_layer = KBD_GetCurrentLayer();
 
     if (target_layer == old_layer)
@@ -610,28 +584,6 @@ static void SwitchLayer(uint8_t target_layer)
 
     KBD_RGB_FlashLayer(target_layer);
 }
-
-#if defined(KBD_LAYOUT_5KEY)
-static void ApplyLightKeyAction(kbd_light_key_action_t action)
-{
-    switch (action)
-    {
-    case KBD_LIGHT_KEY_COLOR:
-        KBD_RGB_NextColor();
-        break;
-    case KBD_LIGHT_KEY_MODE:
-        KBD_RGB_NextLightingMode();
-        break;
-    case KBD_LIGHT_KEY_BRIGHTNESS:
-        KBD_RGB_NextBrightness();
-        break;
-    default:
-        return;
-    }
-    if (KBD_Config_Save() != 0)
-        LOG_W(TAG, "K5 RGB config save failed");
-}
-#endif
 
 /**
  * @brief 执行按键动作
