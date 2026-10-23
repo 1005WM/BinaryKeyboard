@@ -5,7 +5,7 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "${CH592_ROOT}/cmake/toolchain-ch59x.cmake")
 endif()
 
-project(CH592F_RGB_GPIO_HIGH C ASM)
+project(CH592F_RGB_GPIO_HIGH_V2 C ASM)
 set(TARGET_ELF ${PROJECT_NAME}.elf)
 
 # Reuse the board configuration, startup, SDK and app flash address (0x1000).
