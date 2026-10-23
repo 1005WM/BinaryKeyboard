@@ -1,0 +1,58 @@
+name: CH592F RGB GPIO High Demo
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "firmware/CH592F/demos/rgb_gpio_high/**"
+      - ".github/workflows/ch592f-rgb-gpio-high.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/meowkj/binarykeyboard-builder:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Python
+        run: |
+          apt-get update -q
+          apt-get install -y --no-install-recommends python3
+      - name: Build standalone GPIO demo
+        run: |
+          cmake -S firmware/CH592F/demos/rgb_gpio_high -B firmware/CH592F/build/rgb-gpio-high -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel
+          cmake --build firmware/CH592F/build/rgb-gpio-high
+      - name: Build existing bootloaders and merge ISP image
+        run: |
+          python3 tools/scripts/ch592f.py jumpiap-build
+          python3 tools/scripts/ch592f.py bootloader-build
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, "tools/scripts")
+          from targets.ch592.build import merge_hex, _hex_to_bin, jumpiap_hex_path, bootloader_hex_path
+          dest = Path("firmware/CH592F/build/rgb-gpio-high")
+          name = "CH592F_RGB_GPIO_HIGH"
+          stage = dest / "merge-stage.hex"
+          full_hex = dest / f"{name}-full.hex"
+          merge_hex(jumpiap_hex_path(), dest / f"{name}-app.hex", stage)
+          merge_hex(stage, bootloader_hex_path(), full_hex, fill_gaps_with=0xFF)
+          _hex_to_bin(full_hex, dest / f"{name}-full.bin")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ch592f-rgb-gpio-high-${{ github.sha }}
+          path: |
+            firmware/CH592F/build/rgb-gpio-high/*-app.bin
+            firmware/CH592F/build/rgb-gpio-high/*-app.hex
+            firmware/CH592F/build/rgb-gpio-high/*-full.bin
+            firmware/CH592F/build/rgb-gpio-high/*-full.hex
+          if-no-files-found: error
+          retention-days: 30
